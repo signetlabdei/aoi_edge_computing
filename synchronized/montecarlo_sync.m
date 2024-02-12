@@ -1,4 +1,4 @@
-function [paoi, latency, p_succ, av_aoi] = montecarlo_sync(N, mu, tau, L)
+function [paoi, latency, p_succ, av_aoi, load] = montecarlo_sync(N, mu, tau, L)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                         %
 %                        function: montecarlo_sync                        %
@@ -21,6 +21,7 @@ function [paoi, latency, p_succ, av_aoi] = montecarlo_sync(N, mu, tau, L)
 % -latency: the latency results over time (only successful frames)        %
 % -p_succ:  the frame success probability                                 %
 % -av_aoi:  the average AoI in the simulation                             %
+% -load:    the average system load in the simulation                     %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -31,6 +32,7 @@ completed = -ones(1, L);
 latest = -1;
 av_aoi = 0;
 aoi = 0;
+load = 0;
 
 % Main Monte Carlo loop
 for l = 1 : L
@@ -56,6 +58,12 @@ for l = 1 : L
         av_aoi = av_aoi + (aoi + tau / 2) * tau;
         aoi = aoi + tau;
     end
+    % Compute load
+    if (delays(N) <= tau)
+        load = load + delays(N);
+    else
+        load = load + tau;
+    end
 end
 
 % Remove unsuccessful frames and compute success probability
@@ -63,5 +71,6 @@ av_aoi  = av_aoi / (tau * L);
 paoi = paoi(paoi > 0);
 latency = latency(latency > 0);
 p_succ = length(latency) / L;
+load = load / L / tau;
 
 end

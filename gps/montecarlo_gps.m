@@ -1,4 +1,4 @@
-function [paoi, latency, p_succ, av_aoi] = montecarlo_gps(N, mu, nu, client, L)
+function [paoi, latency, p_succ, av_aoi, rho] = montecarlo_gps(N, mu, nu, client, L)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                         %
 %                        function: montecarlo_gps                         %
@@ -22,6 +22,7 @@ function [paoi, latency, p_succ, av_aoi] = montecarlo_gps(N, mu, nu, client, L)
 % -latency: the latency results over time (only successful frames)        %
 % -p_succ:  the frame success probability                                 %
 % -av_aoi:  the average AoI in the simulation                             %
+% -rho:     the average system load in the simulation                     %
 %                                                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -40,6 +41,7 @@ latency = -ones(1, L);
 completed = -ones(B, L);
 latest = -1;
 av_aoi = 0;
+rho = 0;
 aoi = 0;
 done = 0;
 running_latency = 0;
@@ -72,6 +74,13 @@ for l = 1 : L
         X = sum(state);
         delays = cumsum(exprnd(1 / mu, 1, X));
         completed(b, l) = length(find(delays < nu(b)));
+
+        % Compute load over the transition
+        if (max(delays) < nu(b))
+            rho = rho + max(delays);
+        else
+            rho = rho + nu(b);
+        end
         % Assign completion events to batches
         for i = 1 : completed(b, l)
             probs = cumsum(state / sum(state));
@@ -100,6 +109,7 @@ end
 
 % Remove unsuccessful frames and compute success probability
 av_aoi  = av_aoi / (tau * L);
+rho  = rho / (tau * L);
 latency = latency(latency > 0);
 paoi = paoi(paoi > 0);
 

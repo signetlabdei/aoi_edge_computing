@@ -34,7 +34,7 @@ T_th = transition_matrix_fifo(N, mu, nu);
 p_succ_th = success_prob_fifo(N, client, T_th);
 
 % Run Monte Carlo simulation and compute empirical CDFs
-[paoi_mc, latency_mc, p_succ_mc, av_aoi_mc] = montecarlo_fifo(N, mu, nu, client, L);
+[paoi_mc, latency_mc, p_succ_mc, av_aoi_mc, load_mc] = montecarlo_fifo(N, mu, nu, client, L);
 latency_mc_cdf = histcounts(latency_mc, xs);
 latency_mc_cdf = cumsum(latency_mc_cdf) / sum(latency_mc_cdf);
 paoi_mc_cdf = histcounts(paoi_mc, ds);
@@ -59,3 +59,7 @@ legend('Analytical', 'Monte Carlo')
 % Print average AoI (empirical and theoretical)
 av_aoi_mc
 Y = expected_aoi_fifo(N, mu, nu, client)
+
+% Print average load (empirical and theoretical)
+load_mc
+load_fifo(N, mu, nu)
